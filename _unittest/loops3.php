@@ -1,6 +1,6 @@
 <?php
 
-$aFile['index'] = <<<'TEXT'
+$aFile['index'] = '
 #for:$nn,0,7;
 	#for:$item,1,$nn;
 		#around;
@@ -23,7 +23,7 @@ $aFile['index'] = <<<'TEXT'
 		#fill:6,-,$item;
 	#end;
 #end;
-TEXT;
+';
 /*
 
 
@@ -38,7 +38,7 @@ TEXT;
 			$item;	
 */
 
-$result = <<<'TEXT'
+$result = '
 <table border="1" style="width: 200px;">
 	<tr><td colspan="3">head 1</td></tr>
 	<tr>
@@ -142,7 +142,7 @@ $result = <<<'TEXT'
 	</tr>
 </table>
 
-TEXT;
+';
 
 $a1 = array(1,2,3);
 $a2 = array();

@@ -61,6 +61,8 @@
 			ob_start();
 			$_oTmpl-> display($aVars);
 			$real = ob_get_clean();
+			$real = trim($real);
+			$result = trim($result);
 			
 			$realC = trim(preg_replace('/\r?\n/', '<b>&crarr;</b>', htmlentities($real)));
 			$resultC = trim(preg_replace('/\r?\n/', '<b>&crarr;</b>', htmlentities($result)));

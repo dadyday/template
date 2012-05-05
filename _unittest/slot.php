@@ -1,6 +1,6 @@
 <?php
 
-$aFile['index'] = <<<TEXT
+$aFile['index'] = '
 indexStart
 #slot:slot1;
 indexContent1
@@ -8,17 +8,13 @@ indexContent1
 indexContent2
 #slot:slot2;
 indexEnd
-TEXT;
+';
 
-$aFile['slot1'] = <<<TEXT
-slotContent1
-TEXT;
+$aFile['slot1'] = 'slotContent1';
 	
-$aFile['slot2'] = <<<TEXT
-slotContent2
-TEXT;
+$aFile['slot2'] = 'slotContent2';
 
-$result = <<<TEXT
+$result = '
 indexStart
 slotContent1
 indexContent1
@@ -26,6 +22,6 @@ slotContent1
 indexContent2
 slotContent2
 indexEnd
-TEXT;
+';
 
 ?>

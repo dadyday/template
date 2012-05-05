@@ -1,6 +1,6 @@
 <?php
 
-$aFile['index'] = <<<'TEXT'
+$aFile['index'] = '
 indexStart
 $string;
 $string:upper;
@@ -11,9 +11,9 @@ $oObj.property:lower;
 $string;
 $oObj.property;
 indexEnd
-TEXT;
+';
 
-$result = <<<TEXT
+$result = '
 indexStart
 String
 STRING
@@ -22,7 +22,10 @@ property
 another string
 another property
 indexEnd
-TEXT;
+';
+
+function upperFormat($ctx, $value) { return strtoupper($value); };
+function lowerFormat($ctx, $value) { return strtolower($value); };
 
 $string = 'String';
 $oObj = new stdClass();

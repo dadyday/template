@@ -1,6 +1,6 @@
 <?php
 
-$aFile['index'] = <<<'TEXT'
+$aFile['index'] = '
 #each:$a,$o;
 	#between;;
 #end;
@@ -14,14 +14,14 @@ $aFile['index'] = <<<'TEXT'
 		#end;
 	#end;
 #end;
-TEXT;
+';
 
 
-$result = <<<'TEXT'
+$result = '
 x = { p0: [ 1,2,3 ], p1: [ 1,2 ], p2: [ 1 ], };
 x = { p1: [ 1,2,3 ], };
 x = { }
-TEXT;
+';
 
 $o1 = new stdClass();
 $o1->p0 = array(1,2,3);

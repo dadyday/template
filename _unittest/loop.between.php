@@ -1,6 +1,6 @@
 <?php
 
-$aFile['index'] = <<<'TEXT'
+$aFile['index'] = '
 #each:$aTest,$to,$a;
 (#for:$n,1,$to;$n;#between ,;#end;)
 (#for:$n,1,$to;$n;#between , \;;#end;)
@@ -13,10 +13,10 @@ $aFile['index'] = <<<'TEXT'
 (#for:$n,1,$to;$n;#between;#content;,#else;#content;;#end;#end;)
 ---
 #end;
-TEXT;
+';
 
 
-$result = <<<'TEXT'
+$result = '
 ()
 ()
 ()
@@ -58,7 +58,7 @@ $result = <<<'TEXT'
 (1,2,3;)
 ---
 
-TEXT;
+';
 
 $aTest = array(array(), array(1), array(1,2), array(1,2,3));
 

@@ -1,30 +1,22 @@
 <?php
 
-$aFile['index'] = <<<TEXT
+$aFile['index'] = '
 #slot:slot1;
 #slot:slot1,slot2;
 #setSlot:slot1,slot3;
 #slot:slot1;
 #slot:slot1,slot2;
-TEXT;
+';
 
-$aFile['slot1'] = <<<TEXT
-slotContent1
-TEXT;
+$aFile['slot1'] = 'slotContent1';
 	
-$aFile['slot2'] = <<<TEXT
-slotContent2
-TEXT;
+$aFile['slot2'] = 'slotContent2';
 
-$aFile['slot3'] = <<<TEXT
-slotContent3
-TEXT;
+$aFile['slot3'] = 'slotContent3';
 
-$result = <<<TEXT
-slotContent1
+$result = 'slotContent1
 slotContent2
 slotContent3
-slotContent3
-TEXT;
+slotContent3';
 
 ?>

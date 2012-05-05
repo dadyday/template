@@ -12,6 +12,8 @@
 */	
 	
 	
+	
+	
 	class TemplateParser {
 /*	// config
 		static $_templateClass = 'TemplateBase';
@@ -100,10 +102,12 @@
 			$parsed = $this->oParser->parse($this->oTemplate->getSource());
 			return $parsed;
 		}
-		protected function getNewInst($template = null) {
+		protected function getNewInst($template) {
 			$class = get_class($this);
-			$oParser = new $class($this);
-			if (!empty($template)) $oParser->oTemplate = $this->getTemplateObj($template);
+			$oParser = new $class($this->oBase);
+			$oParser->oParent = $this;
+			$oParser->oBlockStack = $this->oBlockStack;
+			$oParser->oTemplate = $this->oBase->getTemplateFile($template);
 			return $oParser;
 		}
 		protected function parseNewInst($template = null) {
@@ -334,15 +338,20 @@
 			
 			$params = '';
 			foreach($aParams as $param) {
-				if ($params) $params .= ', ';
-				$params .= $this->asVar($param);
+				$params .= ', '.$this->asVar($param);
 			}
+			return $this->toPhp(
+				"function {$name}Macro(\$ctx$params) {\n".
+				"	extract((array) \$ctx->aVar, EXTR_SKIP|EXTR_REFS);\n".
+				"	$block \n".
+				"};");
+		/* closures ab v5.3
 			return $this->toPhp(
 				"\$ctx->addMacro('$name', function($params) use (\$ctx) {\n".
 				"	extract(\$ctx->aVar, EXTR_SKIP|EXTR_REFS);\n".
 				"	$block \n".
 				"});");
-
+		*/
 		}
 		
 		function macro($name) {  
@@ -712,7 +721,16 @@
 			return TemplateLinker::toPhp($code);
 		}
 	}
-	
+
+	class TemplateException extends Exception {
+		function __construct($oParser, $message) {
+			$this->oParser = $oParser;
+			$this->oTemplate = $oParser->oTemplate;
+			$args = array_slice(func_get_args(), 2);
+			$message = vsprintf($message, $args);
+			parent::__construct($message);
+		}
+	}	
 	
 /*
 	
