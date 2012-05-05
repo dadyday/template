@@ -1,0 +1,4 @@
+
+/_unittest/cache/*
+/_unittest/tmpl/*
+_cache*.php
