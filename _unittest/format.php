@@ -3,10 +3,10 @@
 $aFile['index'] = '-
 #defFormat:bold,$val;<b>$val</b>#end;
 $a:bold;
-#defFormat:emph,$val;<$e:empty,b;>$val</$e:empty,b;>#end;
-#set:$e,;$a:emph;
-#set:$e,i;$a:emph;
-#set:$e,u;$a:emph;
+#defFormat:emph,$val,$e;<$e:empty,b;>$val</$e:empty,b;>#end;
+#set:$e,;$a:emph,$e;
+#set:$e,i;$a:emph,$e;
+#set:$e,u;$a:emph,$e;
 ';
 
 $result = '-
@@ -16,7 +16,9 @@ $result = '-
 <u>42</u>
 ';
 
-function emptyFormat($ctx, $val, $default) { return !empty($val) ? $val : $default; };
+function emptyFormat($val, $default) { 
+	return !empty($val) ? $val : $default; 
+};
 
 $a = 42;
 $b = 21;

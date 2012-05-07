@@ -16,7 +16,7 @@ verwaltet Template-Variablen, Formate, Makros, Slots
 		var $aSlot = array();
 		
 		function __construct(ITemplateBase $oBase) {
-			self::$oInstance = $this;
+			TemplateContext::$oInstance = $this;
 			$this->oBase = $oBase;
 		}
 		
@@ -33,7 +33,7 @@ verwaltet Template-Variablen, Formate, Makros, Slots
 			error_reporting($oldErr);
 		}
 		private function inc($__inc) {
-			$ctx =& $this;
+			$ctx = $this;
 			extract($this->aVar);
 			include($__inc);
 		}
@@ -80,7 +80,7 @@ verwaltet Template-Variablen, Formate, Makros, Slots
 		}
 		
 		function getTemplate($tmpl) {
-			$oTmplFile = $this->oBase->getTemplateFile($tmpl);
+			$oTmplFile = $this->oBase->getTemplateSource($tmpl);
 			return $oTmplFile->parseFile();
 		}
 		

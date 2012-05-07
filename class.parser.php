@@ -22,9 +22,21 @@
 		function seekTo($pos)	{ $this->pos = $pos; }
 		function seekBy($delta)	{ $this->pos += $delta; }
 		
-		function getCurrentLine() { 
-		   	preg_match_all('/([\x0a\x0d]{1,2})/', substr($this->source, 0, $this->pos), $aMatch, PREG_SET_ORDER);
-			return count($aMatch)+1;
+		function getLine($pos = null, &$row = null, &$col = null) {
+			$text = $this->source;
+			$pos = is_null($pos) ? $this->pos : $pos; 
+			
+			$left = substr($text, 0, $pos);
+			$right = substr($text, $pos);
+			$a = strrpos($left, "\n")+1; if ($a === false) $a = 0;
+			$e = strpos($right, "\n"); if ($e === false) $e = strlen($right);
+			
+			$row = substr_count($left, "\n");
+			$col = $pos-$a;
+			
+			$line = substr($left, $a).substr($right, 0, $e);
+			//echo $text, ' ', $pos, ' ', $a, ' ', $e, ' ', $line, ' ', $row, ' ', $col;
+			return $line;
 		}
 	}
 
@@ -123,8 +135,13 @@
 				if ($p === false) return $parsed;
 				if ($p !== '') $parsed = $this->concat($parsed, $p);
 				
-				$oSrc->pos += strlen($oMatch->match);
+				$oSrc->match = $oMatch->match;
+				$oSrc->matchPos = $oMatch->pos;
+				$oSrc->matchLen = strlen($oMatch->match);
+				
+				$oSrc->pos += $oSrc->matchLen;
 				$p = $this->handle($oMatch->name, $oMatch->aParams);
+				
 				if ($p === false) return $parsed;
 				if ($p !== '') $parsed = $this->concat($parsed, $p);
 				
@@ -149,7 +166,8 @@
 			foreach ($this->aTokenDef as $oTokenDef) {
 				$oM = $this->getMatch($oTokenDef, $oSrc);
 				if ($oM and (!$oMatch or $oMatch->pos >= $oM->pos)) $oMatch = $oM;	
-			}
+			};
+			$this->oMatch = $oMatch;
 			return $oMatch;
 		}
 				

@@ -10,5 +10,6 @@
 	$oTmpl = new TemplateBase('test');
 	$oTmpl->display();
 
-	echo dump($oTmpl);
+	$oTmpl = new TemplateBase('error');
+	$oTmpl->display();
 ?>

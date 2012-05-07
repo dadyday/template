@@ -1,6 +1,6 @@
 <?php
 
-$aFile['index'] = <<<'TEXT'
+$aFile['index'] = '
 kurz
 #for:$n,1,3;
 	#test:	eins:;
@@ -58,9 +58,9 @@ hülleelse
 #end;
 	($n;)
 #end;
-TEXT;
+';
 
-$aFile['index'] = <<<'TEXT'
+$aFile['index'] = '
 1!#for:$n,1,3;#looptest: (;a$n;$n;z#looptest:); #end;!
 2!#for:$n,1,3;#looptest: (, [; a$n;$n;z #looptest:),]; #end;!
 3!#for:$n,1,3;#looptest; (#end; a$n;$n;z #looptest;)#end; #end;!
@@ -69,10 +69,10 @@ $aFile['index'] = <<<'TEXT'
 6!#for:$n,1,3; a$n; #looptest; (#content;) #else; [#content;] #end; $n;z #end;!
 7!#for:$n,1,3;#looptest;#else; [#end; a$n; #looptest; (#content;) #end; $n;z #looptest;#else;] #end;#end;!
 8!#for:$n,1,3;#looptest; (#end; a$n; #looptest;#else; [#content;] #end; $n;z #looptest;) #end;#end;!
-TEXT;
+';
 
 
-$result = <<<'TEXT'
+$result = '
 1!(a11z) a22z a33z!
 2!(a11z)[a22z][a33z]!
 3!(a11z) a22z a33z!
@@ -81,6 +81,6 @@ $result = <<<'TEXT'
 6!(a11z)[a22z][a33z]!
 7!(a11z)[a22z][a33z]!
 8!(a11z)[a22z][a33z]!
-TEXT;
+';
 
 ?>

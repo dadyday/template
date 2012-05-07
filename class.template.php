@@ -1,18 +1,10 @@
 <?php
 
+	require_once('init.interface.php');
 	require_once('class.templatefile.php');
 	require_once('class.templatecontext.php');
 
-	interface ITemplateBase {
-		function getParserObject();
-		function getContextObject();
-		function getTemplateFile($name);
-		function getSourceFileName($name);
-		function getParsedFileName($name);
-	}
-    
 	
-		
 	class TemplateBase implements ITemplateBase {
 		
 		function __construct($name) {
@@ -20,7 +12,7 @@
 		}
 		
 		
-		function getTemplateFile($name) {
+		function getTemplateSource($name) {
 			$oTmplFile = new TemplateFile($this, $name);
 			$this->aFile[] = $oTmplFile;
 			return $oTmplFile;
@@ -43,7 +35,7 @@
 		}
 		
 		function parseFile() {
-			$oTemplateFile = $this->getTemplateFile($this->name);
+			$oTemplateFile = $this->getTemplateSource($this->name);
 			return $oTemplateFile->parseFile();
 		}
 		
@@ -53,7 +45,10 @@
 			$oCtx->includeFile($file, $aVars);
 		}
 		
+		function handleException(Exception $e) {
+			$e->debug();
+		}
+		
 	}
-
 
 ?>

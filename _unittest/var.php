@@ -24,8 +24,8 @@ another property
 indexEnd
 ';
 
-function upperFormat($ctx, $value) { return strtoupper($value); };
-function lowerFormat($ctx, $value) { return strtolower($value); };
+function upperFormat($value) { return strtoupper($value); };
+function lowerFormat($value) { return strtolower($value); };
 
 $string = 'String';
 $oObj = new stdClass();

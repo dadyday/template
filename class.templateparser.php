@@ -3,64 +3,26 @@
 	require_once('class.templatelinker.php');
 	require_once('class.templateparam.php');
 	require_once('class.templateblock.php');
+	require_once('class.templateexception.php');
 
 	require_once(PATH_LIB_COMMON . 'init.tools_regexp.php');
-/*
-	require_once('class.template.loop.php');
-	require_once('class.template.exception.php');
-	
-*/	
-	
-	
+	require_once('init.interface.php');
 	
 	
 	class TemplateParser {
-/*	// config
-		static $_templateClass = 'TemplateBase';
-		
-		function getTemplateClass() {
-			if (!empty($this->templateClass)) return $this->templateClass; 
-			return self::$_templateClass;
-		}
-		function getTemplateObj($name) {
-			$class = $this->getTemplateClass();
-			return new $class($name);
-		}
-		function getTemplateContent($name) {
-			$oTmpl = $this->getTemplateObj($name);
-			return $oTmpl->parse();
-		}
-		function ___getTemplateContentFile($name) {
-			$oTmpl = $this->getTemplateObj($name);
-			return $oTmpl->parseFile();
-		}
-*/		
-		static function logOpen() {}
-		static function logClose() {}
-	
-		
+
 	// instance
+		var $oBase = null;
 		var $oParser = null;
-		var $oTemplate = null;
+		var $oSource = null;
+		var $aSourceStack = array();
 		var $oBlockStack = null;
 
 		function __construct(ITemplateBase $oBase) {
 			$this->oBase = $oBase;
+			$this->_logging = method_exists($oBase, 'logOpen');
 			$this->oParser = new Parser($this);
 			$this->oBlockStack = new BlockStack($this);
-			$this->initToken();
-		}
-		
-		function getTemplateContent($name) {
-			$oTmplFile = $this->oBase->getTemplateFile($name);
-			return $oTmplFile->parse();
-		}
-		
-		function xxx__construct($oParent = null) {
-			$this->oParser = new Parser($this);
-			$this->oParent = $oParent;
-			$this->oBlockStack = $oParent ? $oParent->oBlockStack : new BlockStack($this);
-			$this->oTemplate = $oParent ? $oParent->oTemplate : null;
 			$this->initToken();
 		}
 		
@@ -80,29 +42,69 @@
 			$this->oParser->addTokenHandler('/#(#)/', '_text');
 		}
 		
+	// hooking
+		function getTemplateSource($name) {
+			return $this->oBase->getTemplateSource($name);
+		}
+		
+		function logOpen() {
+			if (!$this->_logging) return;
+			$aArgs = func_get_args();
+			return call_user_method_array('logOpen', $this->oBase, $aArgs);
+		}
+		function logClose() {
+			if (!$this->_logging) return;
+			$aArgs = func_get_args();
+			return call_user_method_array('logClose', $this->oBase, $aArgs);
+		}
+		
+		
+		function parse(ITemplateSource $oSource = null) {
+			if ($oSource) array_push($this->aSourceStack, $oSource->getParseSource());
+			
+			echo dump($this->aSourceStack);
+			
+			$oParseSource = current($this->aSourceStack);
+			$parsed = $this->oParser->parse($oParseSource);
+			echo dump($this->aSourceStack);
+			//$parsed = TemplateLinker::run($parsed);
+			array_pop($this->aSourceStack);				
+			return $parsed;
+		}
+
+		
 	// parsing 
+/*
 		function parseFile(ITemplateFile $oTemplate) {
+			$this->logOpen('parsing template '.$oTemplate->name);
 			$this->oTemplate = $oTemplate;
-			
-			self::logOpen('parsing template '.$oTemplate->name);
-			$parsed = $this->parse();
+			$parsed = $this->parse($oTemplate->getSource());
 			$parsed = TemplateLinker::run($parsed);
-			self::logClose('parse end template '.$oTemplate->name);
-			
+			$this->logClose('parse end template '.$oTemplate->name);
 			return $parsed;
 		}
 		function parseText($text) {
-			if (!is_a($text, 'ParseSource')) $text = new ParseSource($text);
+			$this->logOpen('parsing text');
 			$parsed = $this->oParser->parse($text);
 			$parsed = TemplateLinker::run($parsed);
+			$this->logClose('parse end text '.$oTemplate->name);
 			return $parsed;
 		}
 		
-		protected function parse() {
-			$parsed = $this->oParser->parse($this->oTemplate->getSource());
+		protected function parse($oSource = null) {
+			if (is_null($oSource)) $oSource = $this->oTemplate->oSource;
+			if (!is_a($oSource, 'ParseSource')) $oSource = new ParseSource($oSource);
+			$parsed = $this->oParser->parse($oSource);
 			return $parsed;
 		}
-		protected function getNewInst($template) {
+		protected function parseInline(ITemplateFile $oTemplate) {
+			$oldTemplate = $this->oTemplate;
+			$parsed = $this->parseFile($oTemplate);
+			$this->oTemplate = $oldTemplate;
+			return $parsed;
+		}
+
+		protected function xxx__getNewInst($template) {
 			$class = get_class($this);
 			$oParser = new $class($this->oBase);
 			$oParser->oParent = $this;
@@ -110,13 +112,16 @@
 			$oParser->oTemplate = $this->oBase->getTemplateFile($template);
 			return $oParser;
 		}
-		protected function parseNewInst($template = null) {
+		protected function xxx__parseNewInst($template = null) {
 			$oParser = $this->getNewInst($template);
-			self::logOpen('parsing new instance '.$template);
+			$this->logOpen('parsing new instance '.$template);
 			$ret = $oParser->parse();
-			self::logClose('parse end new instance '.$template);
+			$this->logClose('parse end new instance '.$template);
 			return $ret;
 		}
+*/	
+	
+	
 	
 	// parser primär handler
 	// ************************************************************
@@ -145,10 +150,10 @@
 			};
 			if (!$funcDef) $funcDef = $this->_find($func);
 			if ($funcDef) {
-				self::logOpen("$log -> ".$funcDef[1]);
+				$this->logOpen("$log -> ".$funcDef[1]);
 				$result = $this->_call($funcDef, $aParams);
 				$ret = true;
-				self::logClose();
+				$this->logClose();
 			}
 			return $ret;
 		}
@@ -293,16 +298,33 @@
 		function embed($tmpl) {
 			$tmpl = $this->asCont($tmpl);
 			$this->inline = false;
-			return $this->getTemplateContent($tmpl);
+			$oSource = $this->getTemplateSource($tmpl);
+			return $this->parse($oSource);
 		}
 		
-		// statisch umhüllen
+		function wrap($tmpl) {
+			$oBlock = $this->oBlockStack->push('wrap');
+			$oBlock->wrapContent = $this->parse();
+			
+			$oSource = $this->getTemplateSource($tmpl);
+			$cont = $this->parse($oSource);
+			
+			//$oBlock = $this->oBlockStack->pop();
+			return $cont;
+		}
+		function wrapContent() {
+			$oBlock = $this->oBlockStack->get('wrap');
+			return $oBlock->wrapContent;
+		}
+/*		// statisch umhüllen
 		function wrap($tmpl) {
 			//$tmpl = $this->asVal($tmpl);
 			$oBlock = $this->oBlockStack->push('wrap');
 			//$oBlock->wrapContent = $this->parse();
 			$this->wrapContent = $this->parse();
-			$cont = $this->parseNewInst($tmpl);
+			//$cont = $this->parseNewInst($tmpl);
+			$oTemplate = $this->getTemplateFile($tmpl);
+			$cont = $this->parseFile($oTemplate);
 			$this->oBlockStack->pop();
 			return $cont;
 		}
@@ -314,6 +336,7 @@
 		function wrapEnd() {
 			return false;
 		}
+*/
 		
 		// slots
 		//static $aSlot = array();
@@ -338,10 +361,12 @@
 			
 			$params = '';
 			foreach($aParams as $param) {
-				$params .= ', '.$this->asVar($param);
+				if ($params) $params .= ', ';
+				$params .= $this->asVar($param);
 			}
 			return $this->toPhp(
-				"function {$name}Macro(\$ctx$params) {\n".
+				"function {$name}Macro($params) {\n".
+				"	\$ctx = TemplateContext::\$oInstance;\n".
 				"	extract((array) \$ctx->aVar, EXTR_SKIP|EXTR_REFS);\n".
 				"	$block \n".
 				"};");
@@ -373,8 +398,7 @@
 				$aParams = array_slice($aParams, 1);
 				$params = '';
 				foreach($aParams as $param) $params .= ', '.$this->asVal($param);
-				$code = "\$ctx->{$rule}Format(\$ctx, {$code}{$params})";
-				// closures ab v5.3: $code = "\$ctx->format('$rule', {$code}{$params})";
+				$code = "\$ctx->format('$rule', {$code}{$params})";
 			}
 			return $this->toEcho($code);
 		}
@@ -407,8 +431,8 @@
 				$params .= $this->asVar($param);
 			}
 			return $this->toPhp(
-				"function {$name}Format(\$ctx, $params) {\n".
-				"	extract((array) \$ctx->aVar);\n".
+				"function {$name}Format($params) {\n".
+				"	\$ctx = TemplateContext::\$oInstance;\n".
 				"	ob_start();\n".
 				"	$block \n".
 				"	return ob_get_clean();\n".
@@ -433,7 +457,7 @@
 	// loops
    		// for
 		function forFunc($var, $from, $to, $delta = null) {
-			self::logOpen('loop for start');   
+			$this->logOpen('loop for start');   
 			$var = $this->asVar($var);
 			$from = $this->asPhp($from);
 			$to = $this->asPhp($to);
@@ -449,7 +473,7 @@
 		
 		// each
 		function eachFunc($array, $index, $value = null) {
-			self::logOpen('loop each start');   
+			$this->logOpen('loop each start');   
 			$array = $this->asPhp($array);
 			$index = $this->asVar($index);
 			$init = 	"\$__a = new LoopEachObject($array);";
@@ -460,6 +484,19 @@
 				$value = $this->asVar($value);
 				$start = "foreach(\$__a as $index => $value): ";
 			};
+			return $this->buildLoop($init, $start, $end);
+		}
+		
+		// for
+		function loopFunc($count = 100) {
+			$this->logOpen('loop for start');   
+			$count = $this->asVal($count);
+			$oBlock = $this->oBlockStack->push('loop');
+			
+			$init = 	"\$__a = new LoopForObject(0, $count);";
+			$start = 	"foreach(\$__a as $var): ";
+			$end = 		"endforeach; ";
+			
 			return $this->buildLoop($init, $start, $end);
 		}
 	
@@ -501,7 +538,7 @@
 			//Log::line($oBlock);
 			$content = $oBlock->build($content);
 			$this->oBlockStack->pop();
-			self::logClose('loop end');
+			$this->logClose('loop end');
 			return $this->toPhp($content);
 		}
 		function loopStart() {
@@ -722,16 +759,6 @@
 		}
 	}
 
-	class TemplateException extends Exception {
-		function __construct($oParser, $message) {
-			$this->oParser = $oParser;
-			$this->oTemplate = $oParser->oTemplate;
-			$args = array_slice(func_get_args(), 2);
-			$message = vsprintf($message, $args);
-			parent::__construct($message);
-		}
-	}	
-	
 /*
 	
 	class Block {

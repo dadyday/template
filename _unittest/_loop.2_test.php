@@ -1,6 +1,6 @@
 <?php
 
-$aFile['index'] = <<<'TEXT'
+$aFile['index'] = '
 (#loop;#looptest:a{$n}z,x{$n}y; #end;)
 (#loop;$n;:#looptest:first[;:$n;#looptest:];#end;)
 (#loop;$n;:#looptest:first[,other[;:$n;]#end;)
@@ -17,7 +17,7 @@ $aFile['index'] = <<<'TEXT'
 #end;
 	:$n;
 #end;)
-TEXT;
+';
 
 /*
 $aFile['index'] = <<<'TEXT'
@@ -33,7 +33,7 @@ $aFile['index'] = <<<'TEXT'
 TEXT;
 //*/
 
-$result = <<<'TEXT'
+$result = '
 (a1z x2y x3y x4y x5y)
 (1:first[:1]2::23::34::45::5)
 (1:first[:1]2:other[:2]3:other[:3]4:other[:4]5:other[:5])
@@ -42,7 +42,7 @@ $result = <<<'TEXT'
 (first[1::1]2::23::34::45::5)
 (first[1::1]other[2::2]other[3::3]other[4::4]other[5::5])
 (first[1::1]other[2::2]other[3::3]other[4::4]other[5::5])
-TEXT;
+';
 
 $aTest = array(1,2,3);
 
