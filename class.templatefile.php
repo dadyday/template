@@ -25,9 +25,8 @@
 			return $source;
 		}
 		
-		function parse($source) {                                  
+		function parse() {                                  
 			$this->oParser = $this->oBase->getParserObject();
-			$this->oSource = new ParseSource($source);
 			$parsed = $this->oParser->parse($this);	
 			return $parsed;
 		}
@@ -39,19 +38,23 @@
 		
 		function parseFile() {
 			try {
-				$source = $this->loadSource();
-				$parsed = $this->parse($source);
+				$parsed = $this->parse();
 				$this->saveParsed($parsed);
 			}
 			catch(Exception $e) {
 				$this->oBase->handleException($e);
+				throw $e;
 				//echo dump($this);
 			}
 			return $this->parsedFileName;
 		}
 		
-	// callback fpr class Parser
+	// callback fuer class Parser
 		function getParseSource() {
+			if (!$this->oSource) {
+				$source = $this->loadSource();
+				$this->oSource = new ParseSource($source);	
+			}
 			return $this->oSource;
 		}
 		
@@ -59,20 +62,6 @@
 		function debug(Exception $e) {
 			echo dump($e);
 			echo dump($this);
-		}
-		
-		function debugSourceLine() {
-			$file = $this->sourceFileName;
-			$src = $this->oSource->source;
-			$pos = $this->oSource->matchPos;
-			$len = $this->oSource->matchLen;
-			
-			$line = $this->oSource->getLine($pos, $row, $col);
-			
-			$l = substr($line, 0, $col); 
-			$m = substr($line, $col, $len);
-			$r = substr($line, $col+$len); 
-			return sprintf("file: %s #%d\npos:  %s[%s] #%d\nline: %s%s%s", $file, $row+1, str_repeat(' ',$col), str_repeat('-',$len-2), $col+1, $l, $m, $r);
 		}
 		
 	}

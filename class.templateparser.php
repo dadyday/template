@@ -14,7 +14,7 @@
 	// instance
 		var $oBase = null;
 		var $oParser = null;
-		var $oSource = null;
+		var $oParseSource = null;
 		var $aSourceStack = array();
 		var $oBlockStack = null;
 
@@ -60,14 +60,18 @@
 		
 		
 		function parse(ITemplateSource $oSource = null) {
-			if ($oSource) array_push($this->aSourceStack, $oSource->getParseSource());
+			$this->oParseSource = $oSource ? $oSource->getParseSource() : end($this->aSourceStack);
+			array_push($this->aSourceStack, $this->oParseSource);
 			
+			if (!$this->oParseSource) throw new TemplateException($this, 'no source found');
+			$parsed = $this->oParser->parse($this->oParseSource);	
+		
+			//echo dump($this->oParseSource);
 			
-			$oParseSource = end($this->aSourceStack);
-			$parsed = $this->oParser->parse($oParseSource);
-			//echo dump($this->aSourceStack);
-			//$parsed = TemplateLinker::run($parsed);
-			array_pop($this->aSourceStack);				
+			array_pop($this->aSourceStack);
+			if (empty($this->aSourceStack)) {
+				$parsed = TemplateLinker::run($parsed);
+			}
 			return $parsed;
 		}
 

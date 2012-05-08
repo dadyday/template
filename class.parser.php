@@ -38,6 +38,7 @@
 			//echo $text, ' ', $pos, ' ', $a, ' ', $e, ' ', $line, ' ', $row, ' ', $col;
 			return $line;
 		}
+		
 	}
 
 	class Parser {
