@@ -10,7 +10,7 @@
 		
 		function getTemplateSource($name) {
 			$text = 'abc $a; '.$name;
-			if ($name == 'w') $text = 'wrap  wrapend';
+			if ($name == 'w') $text = 'wrap #content; wrapend';
 			$oSrc = new Src($text);
 			return $oSrc;
 		}

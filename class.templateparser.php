@@ -62,11 +62,10 @@
 		function parse(ITemplateSource $oSource = null) {
 			if ($oSource) array_push($this->aSourceStack, $oSource->getParseSource());
 			
-			echo dump($this->aSourceStack);
 			
-			$oParseSource = current($this->aSourceStack);
+			$oParseSource = end($this->aSourceStack);
 			$parsed = $this->oParser->parse($oParseSource);
-			echo dump($this->aSourceStack);
+			//echo dump($this->aSourceStack);
 			//$parsed = TemplateLinker::run($parsed);
 			array_pop($this->aSourceStack);				
 			return $parsed;
@@ -304,12 +303,12 @@
 		
 		function wrap($tmpl) {
 			$oBlock = $this->oBlockStack->push('wrap');
-			$oBlock->wrapContent = $this->parse();
+			$cont = $this->parse();
 			
+			$oBlock = $this->oBlockStack->push('wrap');
+			$oBlock->wrapContent = $cont;
 			$oSource = $this->getTemplateSource($tmpl);
 			$cont = $this->parse($oSource);
-			
-			//$oBlock = $this->oBlockStack->pop();
 			return $cont;
 		}
 		function wrapContent() {
