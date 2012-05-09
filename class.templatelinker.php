@@ -10,7 +10,7 @@
 		var $aMode = array();
 		
 		function __construct() {
-			parent::__construct();
+			parent::__construct($this);
 			
 			//$this->addTokenHandler('/\r?\n/', '_nl');
 			$this->addTokenHandler('/<%(\w)/', '_mode');

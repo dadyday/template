@@ -51,11 +51,16 @@
 	
 		
 		var $aTokenDef = array();
-		var $aHandlerDef = array('_text', '_text');
+		var $aHandlerDef = array();
 		var $oHandlerObj = null;
 		
 		function __construct($oHandlerObj = null) {
-			$this->setHandlerObject($oHandlerObj);
+			if ($oHandlerObj) $this->setHandlerObject($oHandlerObj);
+			$this->addHandler('_text', array($this, '_text'));
+		}
+		
+		function _text($text) {
+			return $text;
 		}
 		
 		function setHandlerObject($oHandlerObj = null) {
@@ -77,23 +82,19 @@
 		
 		function addHandler($name, $handlerDef) {
 			if (!is_array($handlerDef)) $handlerDef = array(null, $handlerDef); 
+			if (is_null($handlerDef[0]) && $this->oHandlerObj) $handlerDef[0] = $this->oHandlerObj;
+			if (is_null($handlerDef[0])) {
+				if (!function_exists($handlerDef[1])) throw new Exception('handler GLOBAL::'.$handlerDef[1].' not found for token "'.$name.'"');
+			}
+			else {
+				if (!method_exists($handlerDef[0], $handlerDef[1])) throw new Exception('handler '.get_class($handlerDef[0]).'::'.$handlerDef[1].' not found for token "'.$name.'"');
+			};
 			$this->aHandlerDef[$name] = $handlerDef;
 		}
 		
 		function getHandlerDef($tokenName) {
-			$handlerDef = null;
-			if (isset($this->aHandlerDef[$tokenName])) {
-				$handlerDef = $this->aHandlerDef[$tokenName];
-				if ($this->oHandlerObj) $handlerDef[0] = $this->oHandlerObj;
-				if (is_null($handlerDef[0])) $handlerDef = $handlerDef[1];
-			}
-			else if ($this->oHandlerObj && method_exists($this->oHandlerObj, $tokenName)) {
-				$handlerDef = array($this->oHandlerObj, $tokenName);
-			}
-			else if (function_exists($tokenName)) {
-				$handlerDef = $tokenName;
-			}
-			return $handlerDef;
+			if (!isset($this->aHandlerDef[$tokenName])) throw new Exception('no handler found for token "'.$tokenName.'"');
+			return $this->aHandlerDef[$tokenName];
 		}
 		
 		function handle($tokenName, $aParams = array()) {
@@ -132,9 +133,11 @@
 				$text = substr($oSrc->source, $oSrc->pos, $oMatch->pos - $oSrc->pos);
 				$oSrc->pos = $oMatch->pos;
 				
-				$p = $this->handle('_text', array($text));
-				if ($p === false) return $parsed;
-				if ($p !== '') $parsed = $this->concat($parsed, $p);
+				if ($text != '') {
+					$p = $this->handle('_text', array($text));
+					if ($p === false) return $parsed;
+					if ($p !== '') $parsed = $this->concat($parsed, $p);
+				};
 				
 				$oSrc->match = $oMatch->match;
 				$oSrc->matchPos = $oMatch->pos;
@@ -151,8 +154,10 @@
 			$text = substr($oSrc->source, $oSrc->pos);
 			$oSrc->pos = strlen($oSrc->source);
 			
-			$p = $this->handle('_text', array($text));
-			if ($p !== '') $parsed = $this->concat($parsed, $p);
+			if ($text != '') {
+				$p = $this->handle('_text', array($text));
+				if ($p !== '') $parsed = $this->concat($parsed, $p);
+			};
 			
 			return $parsed;			
 		}
