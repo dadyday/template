@@ -11,14 +11,26 @@
 		function getTemplateSource($name) {
 			$text = 'abc $a; '.$name;
 			if ($name == 'w') $text = 'wrap #content; wrapend';
-			return $text;
+			$oSrc = new Src($text);
+			return $oSrc;
 		}
 	}
 		
+	class Src implements ITemplateSource {
+
+		function __construct($text) {
+			$this->oSource = new ParseSource($text);
+		}
+		
+		function getParseSource() {	
+			return $this->oSource;
+		}
+	}
+
 	$oBase = new Base;
 
 	$oParser = new TemplateParser($oBase);
-	$result = $oParser->parse('#wrap:w; start #embed:test; end #end;');
+	$result = $oParser->parse(new Src('#wrap:w; start #embed:test; end #end;'));
 	echo dump($result);
 
 ?>

@@ -58,42 +58,73 @@
 			return call_user_method_array('logClose', $this->oBase, $aArgs);
 		}
 		
-
-		function parse($source = null) {
-			$parsed = null;
-			switch(true) {           
-				case is_null($source):
-					if (!$this->oParseSource) throw new TemplateException($this, 'no source found');
-					$parsed = $this->parseSource($this->oParseSource);
-					break;
-					
-				case is_a($source, 'IParseSource'):
-					$parsed = $this->parseSource($source);
-					break;
-					
-				case is_a($source, 'ITemplateSource'):
-					$parsed = $this->parseSource($source->getParseSource());
-					$parsed = TemplateLinker::run($parsed);
-					break;
-					
-				case is_string($source):
-					$parsed = $this->parseSource(new ParseSource($source));
-					$parsed = TemplateLinker::run($parsed);
-					break;
+		
+		function parse(ITemplateSource $oSource = null) {
+			$this->oParseSource = $oSource ? $oSource->getParseSource() : end($this->aSourceStack);
+			array_push($this->aSourceStack, $this->oParseSource);
+			
+			if (!$this->oParseSource) throw new TemplateException($this, 'no source found');
+			$parsed = $this->oParser->parse($this->oParseSource);	
+		
+			//echo dump($this->oParseSource);
+			
+			array_pop($this->aSourceStack);
+			if (empty($this->aSourceStack)) {
+				$parsed = TemplateLinker::run($parsed);
 			}
 			return $parsed;
 		}
+
 		
-		protected function parseSource(IParseSource $oSource) {
-			array_push($this->aSourceStack, $this->oParseSource);
-			
-			$this->oParseSource = $oSource;
-			$parsed = $this->oParser->parse($this->oParseSource);
-			
-			$this->oParseSource = array_pop($this->aSourceStack);
+	// parsing 
+/*
+		function parseFile(ITemplateFile $oTemplate) {
+			$this->logOpen('parsing template '.$oTemplate->name);
+			$this->oTemplate = $oTemplate;
+			$parsed = $this->parse($oTemplate->getSource());
+			$parsed = TemplateLinker::run($parsed);
+			$this->logClose('parse end template '.$oTemplate->name);
+			return $parsed;
+		}
+		function parseText($text) {
+			$this->logOpen('parsing text');
+			$parsed = $this->oParser->parse($text);
+			$parsed = TemplateLinker::run($parsed);
+			$this->logClose('parse end text '.$oTemplate->name);
+			return $parsed;
+		}
+		
+		protected function parse($oSource = null) {
+			if (is_null($oSource)) $oSource = $this->oTemplate->oSource;
+			if (!is_a($oSource, 'ParseSource')) $oSource = new ParseSource($oSource);
+			$parsed = $this->oParser->parse($oSource);
+			return $parsed;
+		}
+		protected function parseInline(ITemplateFile $oTemplate) {
+			$oldTemplate = $this->oTemplate;
+			$parsed = $this->parseFile($oTemplate);
+			$this->oTemplate = $oldTemplate;
 			return $parsed;
 		}
 
+		protected function xxx__getNewInst($template) {
+			$class = get_class($this);
+			$oParser = new $class($this->oBase);
+			$oParser->oParent = $this;
+			$oParser->oBlockStack = $this->oBlockStack;
+			$oParser->oTemplate = $this->oBase->getTemplateFile($template);
+			return $oParser;
+		}
+		protected function xxx__parseNewInst($template = null) {
+			$oParser = $this->getNewInst($template);
+			$this->logOpen('parsing new instance '.$template);
+			$ret = $oParser->parse();
+			$this->logClose('parse end new instance '.$template);
+			return $ret;
+		}
+*/	
+	
+	
 	
 	// parser primär handler
 	// ************************************************************
@@ -288,7 +319,6 @@
 			$oBlock = $this->oBlockStack->get('wrap');
 			return $oBlock->wrapContent;
 		}
-		
 /*		// statisch umhüllen
 		function wrap($tmpl) {
 			//$tmpl = $this->asVal($tmpl);
