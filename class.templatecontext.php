@@ -82,6 +82,7 @@ verwaltet Template-Variablen, Formate, Makros, Slots
 		function getTemplate($tmpl) {
 			$oTmplFile = $this->oBase->getTemplateSource($tmpl);
 			return $oTmplFile->parseFile();
+			return $oTmplFile->parsedFileName;
 		}
 		
 	}

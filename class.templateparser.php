@@ -59,22 +59,31 @@
 		}
 		
 		
-		function parse(ITemplateSource $oSource = null) {
-			$this->oParseSource = $oSource ? $oSource->getParseSource() : end($this->aSourceStack);
+		function parse(IParseSource $oParseSource) {
 			array_push($this->aSourceStack, $this->oParseSource);
 			
-			if (!$this->oParseSource) throw new TemplateException($this, 'no source found');
+			$this->oParseSource = $oParseSource;
 			$parsed = $this->oParser->parse($this->oParseSource);	
-		
-			//echo dump($this->oParseSource);
 			
-			array_pop($this->aSourceStack);
-			if (empty($this->aSourceStack)) {
-				$parsed = TemplateLinker::run($parsed);
-			}
+			$this->oParseSource = array_pop($this->aSourceStack);
 			return $parsed;
 		}
+		
+		function parseText($text) {
+			$oParseSource = new ParseSource($text);
+			return $this->parse($oParseSource);
+		}
 
+		function parseFile(ITemplateSource $oSource) {
+			$parsed = $this->parse($oSource->getParseSource());
+			$parsed = TemplateLinker::run($parsed);
+			return $parsed;
+		}
+		
+		function parseNext() {
+			if (empty($this->oParseSource)) throw new TemplateException($this, 'no source for parsing available');
+			return $this->parse($this->oParseSource);
+		}
 		
 	// parsing 
 /*
@@ -246,7 +255,7 @@
 			$oBlock = $this->oBlockStack->push('if');
 			$oBlock->elseBlock = '';
 			$oBlock->elseIfBlock = array();
-			$oBlock->ifBlock = $this->parse();
+			$oBlock->ifBlock = $this->parseNext();
 			
 			$code = "\nif($condition):" . $this->toHtml($oBlock->ifBlock);
 			foreach ($oBlock->elseIfBlock as $elseif) {
@@ -274,7 +283,7 @@
 		
 		function ifElse0() {
 			$oBlock = $this->oBlockStack->get('if');
-			$oBlock->elseBlock = $this->parse();
+			$oBlock->elseBlock = $this->parseNext();
 			return false;
 		}
 		
@@ -282,7 +291,7 @@
 			$condition = $this->asPhp($condition);
 			
 			$oBlock = $this->oBlockStack->get('if');
-			$oBlock->elseIfBlock[] = array($condition, $this->parse());
+			$oBlock->elseIfBlock[] = array($condition, $this->parseNext());
 			return false;
 		}
 		
@@ -302,44 +311,24 @@
 			$tmpl = $this->asCont($tmpl);
 			$this->inline = false;
 			$oSource = $this->getTemplateSource($tmpl);
-			return $this->parse($oSource);
+			return $this->parseFile($oSource);
 		}
 		
+		// statisch umhüllen
 		function wrap($tmpl) {
 			$oBlock = $this->oBlockStack->push('wrap');
-			$cont = $this->parse();
+			$this->wrapContent = $this->parseNext();
 			
 			$oBlock = $this->oBlockStack->push('wrap');
-			$oBlock->wrapContent = $cont;
 			$oSource = $this->getTemplateSource($tmpl);
-			$cont = $this->parse($oSource);
-			return $cont;
+			return $this->parseFile($oSource);
 		}
 		function wrapContent() {
-			$oBlock = $this->oBlockStack->get('wrap');
-			return $oBlock->wrapContent;
+			$oBlock = $this->oBlockStack->pop('wrap');
+			return $this->wrapContent;
 		}
-/*		// statisch umhüllen
-		function wrap($tmpl) {
-			//$tmpl = $this->asVal($tmpl);
-			$oBlock = $this->oBlockStack->push('wrap');
-			//$oBlock->wrapContent = $this->parse();
-			$this->wrapContent = $this->parse();
-			//$cont = $this->parseNewInst($tmpl);
-			$oTemplate = $this->getTemplateFile($tmpl);
-			$cont = $this->parseFile($oTemplate);
-			$this->oBlockStack->pop();
-			return $cont;
-		}
-		function wrapContent() {
-			$oBlock = $this->oBlockStack->get('wrap');
-			//return $oBlock->wrapContent;
-			return $this->oParent->wrapContent;
-		}
-		function wrapEnd() {
-			return false;
-		}
-*/
+		
+
 		
 		// slots
 		//static $aSlot = array();
@@ -359,7 +348,7 @@
 			$aParams = array_slice(func_get_args(), 1);
 			
 			$oBlock = $this->oBlockStack->push('defMacro');
-			$block = $this->toHtml($this->parse());
+			$block = $this->toHtml($this->parseNext());
 			$this->oBlockStack->pop();
 			
 			$params = '';
@@ -425,7 +414,7 @@
 			$aParams = array_slice(func_get_args(), 1);
 			
 			$oBlock = $this->oBlockStack->push('defFormat');
-			$block = $this->toHtml($this->parse());
+			$block = $this->toHtml($this->parseNext());
 			$this->oBlockStack->pop();
 			
 			$params = '';
@@ -537,7 +526,7 @@
 		function buildLoop($init, $start, $end) {
 			//Log::section('loop start');   
 			$oBlock = $this->oBlockStack->push('loop', new BlockLoop($init, $start, $end));
-			$content = 	$this->toHtml($this->parse());
+			$content = 	$this->toHtml($this->parseNext());
 			//Log::line($oBlock);
 			$content = $oBlock->build($content);
 			$this->oBlockStack->pop();
@@ -546,11 +535,11 @@
 		}
 		function loopStart() {
 			$oFeature = $this->getLoopFeature();
-			$oFeature->_content = $this->parse();
+			$oFeature->_content = $this->parseNext();
 		}
 		function loopContent() {
 			$oFeature = $this->getLoopFeature();
-			$content = $this->parse();
+			$content = $this->parseNext();
 			if (!empty($oFeature->_hasElse)) {          
 				$oFeature->_beforeElseContent = $oFeature->_elseContent;
 				$oFeature->_afterElseContent = $content;
@@ -566,7 +555,7 @@
 		function loopElse() {
 			$oFeature = $this->getLoopFeature();
 			$oFeature->_hasElse = true;
-			$content = $this->parse();
+			$content = $this->parseNext();
 			$oFeature->_hasElse = false;
 			$oFeature->_elseContent = $content;
 			return false;

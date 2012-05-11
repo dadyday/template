@@ -6,10 +6,14 @@
 	require_once('cfg.php');
 	require_once('class.template.php');
 
-
-	$oTmpl = new TemplateBase('test');
-	$oTmpl->display();
-
-	$oTmpl = new TemplateBase('error');
-	$oTmpl->display();
+	try {
+		$oTmpl = new TemplateBase('test');
+		$oTmpl->display();
+		
+		$oTmpl = new TemplateBase('error');
+		$oTmpl->display();
+	}
+	catch(TemplateException $e) {
+		echo $e->debug();
+	}
 ?>

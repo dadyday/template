@@ -19,7 +19,6 @@
 				else {
 					$aMessageParams[] = $param;
 				}
-				
 			}
 			$message = vsprintf($message, $aMessageParams);
 			parent::__construct($message, $code);
@@ -29,43 +28,19 @@
 			if (is_a($oObject, 'TemplateParser')) {
 				$this->oParser = $oObject;
 			}
+			if (is_a($oObject, 'ITemplateSource')) {
+				$this->oSource = $oObject;
+			}
+			if (is_a($oObject, 'ITemplateBase')) {
+				$this->oBase = $oObject;
+			}
 			$this->aObject[] = $oObject;
 		}
 		
-		function xxx_debugSourceLine() {
-			$file = $this->oTemplate->oParser->oSrc->source;
-			$src = $this->oParser->oParser->oSrc->source;
-			$pos = $this->oParser->oParser->oMatch->pos;
-			$len = strlen($this->oParser->oParser->oMatch->match);
-			
-			getCurrentLine($src, $pos, $line, $row, $col);
-			
-			$l = substr($line, 0, $col); 
-			$m = substr($line, $col, $len);
-			$r = substr($line, $col+$len); 
-			return sprintf("#%d: %s<b>%s</b>%s\n%s^ #%d", $row, $l, $m, $r, str_repeat('-',$col+strlen($row)+3), $col);
-		}
-		
-		function debugSourceLine() {
-			$file = ''; //$this->sourceFileName;
-			$oSource = $this->oParser->oSource;
-			$src = $oSource->source;
-			$pos = $oSource->matchPos;
-			$len = $oSource->matchLen;
-			
-			$line = $oSource->getLine($pos, $row, $col);
-			
-			$l = substr($line, 0, $col); 
-			$m = substr($line, $col, $len);
-			$r = substr($line, $col+$len); 
-			return sprintf("file: %s #%d\npos:  %s[%s] #%d\nline: %s%s%s", $file, $row+1, str_repeat(' ',$col), str_repeat('-',$len-2), $col+1, $l, $m, $r);
-		}
-		
 		function debug() {
-			
 			echo '<div style="border:solid 1px black; background: #fee; color: #000; margin: 10px; padding:10px;">';
 			echo '<b style="font-size:120%">'.$this->getMessage().'</b>';
-			if ($this->oParser->oSource) echo '<pre>'.$this->debugSourceLine().'</pre>';
+			if ($this->oSource && method_exists($this->oSource, 'getDebugInfo')) echo '<pre>'.$this->oSource->getDebugInfo().'</pre>';
 			echo dump($this->aObject);
 			echo '</div>';
 		}
