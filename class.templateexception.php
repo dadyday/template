@@ -40,7 +40,7 @@
 		function debug() {
 			echo '<div style="border:solid 1px black; background: #fee; color: #000; margin: 10px; padding:10px;">';
 			echo '<b style="font-size:120%">'.$this->getMessage().'</b>';
-			if ($this->oSource && method_exists($this->oSource, 'getDebugInfo')) echo '<pre>'.$this->oSource->getDebugInfo().'</pre>';
+			if ($this->oParser && method_exists($this->oParser, 'getDebugInfo')) echo '<pre>'.$this->oParser->getDebugInfo().'</pre>';
 			echo dump($this->aObject);
 			echo '</div>';
 		}

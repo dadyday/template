@@ -730,6 +730,12 @@
 		static function toPhp($code) {
 			return TemplateLinker::toPhp($code);
 		}
+		
+	// debug
+		function getDebugInfo() {
+			if (empty($this->oParseSource)) return;
+			return $this->oParseSource->getDebugInfo();
+		}
 	}
 
 /*

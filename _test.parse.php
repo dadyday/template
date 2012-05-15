@@ -18,13 +18,12 @@
 	$oBase = new Base;
 
 
-	try {		$oParser = new TemplateParser($oBase);
-		$oSrc = new Src('#wrap:w; #embed:test; #end;');
-		echo $oParser->parse($oSrc);
+	try {		
+		$oParser = new TemplateParser($oBase);
+		echo $oParser->parse('#wrap:w; #embed:test; #end;');
 		
 		$oParser = new TemplateParser($oBase);
-		$oSrc = new Src('#wrap:w; #bla:test; #end;');
-		echo $oParser->parse($oSrc);
+		echo $oParser->parse('#wrap:w; #bla:test; #end;');
 	}
 	catch(TemplateException $e) {
 		echo $e->debug();

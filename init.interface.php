@@ -9,8 +9,11 @@
 	}
 
 	interface ITemplateSource {
-		//function parse();
-		function getParseSource();
+		function parseFile();		// returns cachefilename for context
 	};
+	
+	interface IDebug {
+		function getDebugInfo();	// returns usefull help for exceptionhandling
+	}
 		
 ?>

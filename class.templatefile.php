@@ -39,7 +39,7 @@
 		function parse() {
 			try {
 				$this->oParser = $this->oBase->getParserObject();
-				$parsed = $this->oParser->parseFile($this);	
+				$parsed = $this->oParser->parse($this);	
 				return $parsed;
 			}
 			catch(TemplateException $e) {
