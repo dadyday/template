@@ -40,6 +40,12 @@
 		}
 		
 	}
+	
+	class ParseMatch {
+	}
+
+	class ParseToken {
+	}
 
 	class Parser {
 		
@@ -53,6 +59,9 @@
 		var $aTokenDef = array();
 		var $aHandlerDef = array();
 		var $oHandlerObj = null;
+		
+		var $aTokenLog = array();
+		var $logging = false;
 		
 		function __construct($oHandlerObj = null) {
 			if ($oHandlerObj) $this->setHandlerObject($oHandlerObj);
@@ -74,7 +83,7 @@
 		}
 		
 		function addToken($regExp, $name) {
-			$oTokenDef = new stdClass();
+			$oTokenDef = new ParseToken();
 			$oTokenDef->regExp = $regExp;
 			$oTokenDef->name = $name;
 			$this->aTokenDef[] = $oTokenDef; 
@@ -129,6 +138,8 @@
 			while (1) {
 				$oMatch = $this->getNextMatch($oSrc);
 				if (!$oMatch) break;
+				if ($this->logging) $this->aTokenLog[] = $oMatch;
+				
 				
 				$text = substr($oSrc->source, $oSrc->pos, $oMatch->pos - $oSrc->pos);
 				$oSrc->pos = $oMatch->pos;
@@ -181,7 +192,7 @@
 			$ok = preg_match($oTokenDef->regExp, $oSrc->getSource(), $aMatch, PREG_OFFSET_CAPTURE, $oSrc->getPos());
 			//if ($aMatch[2][0] == 'button') echo dump($aMatch);
 			if (!$ok) return false;
-			$oMatch = new stdClass();
+			$oMatch = new ParseMatch();
 			$oMatch->match = $aMatch[0][0];
 			$oMatch->pos = $aMatch[0][1];
 			$oMatch->name = $oTokenDef->name;

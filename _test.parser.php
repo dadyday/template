@@ -11,33 +11,75 @@
 		function __construct() {
 			parent::__construct($this);
 			//$this->setHandlerObject($this);
-			//$this->addHandler('_text', '_text');
-			$this->addTokenHandler('/<(\w+)\s*\/>/', '_tagSingle');
-			$this->addTokenHandler('/<(\w+)\s*>/', '_tagOpen');
+			
+			$this->newSection();
+			$this->addTokenHandler('/<(\w+)\s*/', '_tagOpen');
 			$this->addTokenHandler('/<\/(\w+)\s*>/', '_tagClose');
+			$this->saveSection('tags');
+
+			$this->newSection();
+			$this->addTokenHandler('/(\w+)="([^"]*)"\s*/', '_tagAttrib');
+			$this->addTokenHandler('/>/', '_tagEnd');
+			$this->saveSection('attribs');
+
+			$this->setSection('tags');
 			
 			$this->oRoot = new stdClass();
 			$this->oRoot->aChild = array();
 			$this->oNode = $this->oRoot;
 		}
 		
+		var $aTokenDefList = array();
+		var $aTokenDefStack = array();
+		
+		function newSection() {
+			$this->aTokenDef = array();
+		}
+		function saveSection($name) {
+			$this->aTokenDefList[$name] = $this->aTokenDef;
+		}
+		function setSection($name) {
+			$this->aTokenDef = $this->aTokenDefList[$name];
+		}
+		
+		function parseSection($name) {
+			array_push($this->aTokenDefStack, $this->aTokenDef);
+			$this->setSection($name);
+			$result = $this->parse();
+			$this->aTokenDef = array_pop($this->aTokenDefStack);
+			return $result;
+		}
+		
+		
+		var $ind = 1;
+		function getInd($off = 0) {
+			return "\n".str_repeat('__', $this->ind+$off);
+		}
+		
+		function _tagOpen($name) {
+			$this->openNode($name);
+			$this->ind++;
+			$attr = $this->parseSection('attribs');
+			$cont = $this->parseSection('tags');
+			$this->ind--;
+			$this->closeNode();
+			return $this->getInd().$name.'('.$attr.') {'.$cont.$this->getInd().'};';
+		}
+		function _tagAttrib($name, $value) {
+			$this->addAttrib($name, $value);
+			return $name.'='.$value;
+		}
+		function _tagEnd() {
+			$this->stop();
+			return false;
+		}
 		function _text($text) {
 			$this->addText($text);
-			return '"'.$text.'"';
-		}
-		function _tagOpen($name, $attribs = '') {
-			$this->openNode($name);
-			return '['.$name.':'.$this->parse();
-		}
-		function _tagSingle($name, $attribs = '') {
-			$this->openNode($name);
-			$this->closeNode();
-			return '['.$name.']';
+			return $this->getInd().'"'.$text.'"';
 		}
 		function _tagClose($name) {
-			$this->closeNode();
 			$this->stop();
-			return ']';
+			return false;
 		}
 		
 		
@@ -47,6 +89,7 @@
 			$oNode = new stdClass();
 			$oNode->name = $name;
 			$oNode->oParent = $this->oNode;
+			$oNode->aAttrib = array();
 			$oNode->aChild = array();
 			$this->oNode->aChild[] = $oNode;
 			$this->oNode = $oNode;
@@ -57,17 +100,24 @@
 		function addText($text) {
 			$this->oNode->aChild[] = $text;
 		}
+		function addAttrib($name, $value) {
+			$this->oNode->aAttrib[$name] = $value;
+		}
 	}
 
 
 	$text = 'text <tag>0<test/> content <inner /> </tag> text';
+	$text = '<html><body color="red">text!</body></html>';
 	
 	try {
 		$oParser = new TestParser();
+		$oParser->logging = 1;
 		$parsed = $oParser->parse($text);	
 		
-		echo dump($parsed);
+		echo '<pre>'.$parsed.'</pre>';
+		echo dump($oParser->oRoot,null,3);
 		echo dump($oParser);
+		echo dump(get_included_files());
 	}
 	catch(Exception $e) {
 		echo pre($e->getMessage());
