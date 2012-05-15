@@ -9,8 +9,6 @@
 	}
 
 	interface ITemplateSource {
-		//function __construct(ITemplateBase $oBase, $name);
-		//function parseFile();
 		//function parse();
 		function getParseSource();
 	};

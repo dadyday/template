@@ -7,18 +7,18 @@ $aFile['index'] = '
 ---#wrap:wrap1;#wrap:wrap2;zzz#end;#end;---
 ';
 
-$aFile['wrap0'] = '[#content;]';
+$aFile['wrap0'] = '[0#content;]';
 
-$aFile['wrap1'] = '#wrap:wrap0;(#content;)#end;';
+$aFile['wrap1'] = '#wrap:wrap0;(1#content;)#end;';
 	
-$aFile['wrap2'] = '{#content;}';
+$aFile['wrap2'] = '{2#content;}';
 
 
 $result = '
----[www]---
----[[{xxx}]]---
----[(yyy)]---
----[({zzz})]---
+---[0www]---
+---[0[0{2xxx}]]---
+---[0(1yyy)]---
+---[0(1{2zzz})]---
 ';
 
 ?>

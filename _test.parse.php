@@ -9,16 +9,25 @@
 	class Base implements ITemplateBase {
 		
 		function getTemplateSource($name) {
-			$text = 'abc $a; '.$name;
-			if ($name == 'w') $text = 'wrap #content; wrapend';
+			$text = 'content of "'.$name.'"';
+			if ($name == 'w') $text = 'wrapstart #content; wrapend';
 			return $text;
 		}
 	}
 		
 	$oBase = new Base;
 
-	$oParser = new TemplateParser($oBase);
-	$result = $oParser->parse('#wrap:w; start #embed:test; end #end;');
-	echo dump($result);
+
+	try {		$oParser = new TemplateParser($oBase);
+		$oSrc = new Src('#wrap:w; #embed:test; #end;');
+		echo $oParser->parse($oSrc);
+		
+		$oParser = new TemplateParser($oBase);
+		$oSrc = new Src('#wrap:w; #bla:test; #end;');
+		echo $oParser->parse($oSrc);
+	}
+	catch(TemplateException $e) {
+		echo $e->debug();
+	}
 
 ?>
