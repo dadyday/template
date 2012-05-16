@@ -9,7 +9,7 @@
 	require_once('init.interface.php');
 	
 	
-	class TemplateParser {
+	class TemplateParser implements IDebug {
 
 	// instance
 		var $oBase = null;
@@ -734,7 +734,7 @@
 	// debug
 		function getDebugInfo() {
 			if (empty($this->oParseSource)) return;
-			return $this->oParseSource->getDebugInfo();
+			return $this->oParseSource->getLine();
 		}
 	}
 

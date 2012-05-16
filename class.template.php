@@ -6,7 +6,7 @@
 	require_once('class.templateexception.php');
 
 	
-	class TemplateBase implements ITemplateBase {
+	class TemplateBase implements ITemplateBase, IDebug {
 		
 		function __construct($name) {
 			$this->name = $name;
@@ -51,6 +51,9 @@
 			$oCtx->includeFile($file, $aVars);
 		}
 		
+		function getDebugInfo() {
+			return sprintf("template: %s", $this->name);
+		}
 	}
 
 ?>

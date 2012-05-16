@@ -1,5 +1,7 @@
 <?php
 
+	require_once('init.interface.php');
+
 	interface IParseSource {
 		function __construct($source);
 		function getSource();
@@ -8,7 +10,7 @@
 		function seekBy($delta);
 	}
 
-	class ParseSource implements IParseSource {    
+	class ParseSource implements IParseSource, IDebug {    
 		var $source = '';
 		var $pos = 0;
 		
@@ -28,7 +30,7 @@
 			
 			$left = substr($text, 0, $pos);
 			$right = substr($text, $pos);
-			$a = strrpos($left, "\n")+1; if ($a === false) $a = 0;
+			$a = strrpos($left, "\n"); $a = ($a === false) ? 0 : $a+1;
 			$e = strpos($right, "\n"); if ($e === false) $e = strlen($right);
 			
 			$row = substr_count($left, "\n");
@@ -39,6 +41,9 @@
 			return $line;
 		}
 		
+		function getDebugInfo() {
+			return $this->getLine();
+		}
 	}
 	
 	class ParseMatch {

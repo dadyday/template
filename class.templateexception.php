@@ -9,7 +9,7 @@
 			$aMessageParams = array();
 			$code = -1;
 			foreach ($aParam as $param) {
-				if (is_object($param)) {
+				if (is_object($param) && is_a($param, 'IDebug')) {
 					$this->addObject($param);
 				}
 				elseif (empty($message)) {
@@ -24,24 +24,28 @@
 			parent::__construct($message, $code);
 		}
 		
-		function addObject($oObject) {
-			if (is_a($oObject, 'TemplateParser')) {
-				$this->oParser = $oObject;
-			}
-			if (is_a($oObject, 'ITemplateSource')) {
-				$this->oSource = $oObject;
-			}
-			if (is_a($oObject, 'ITemplateBase')) {
-				$this->oBase = $oObject;
-			}
+		function addObject(IDebug $oObject) {                                           
 			$this->aObject[] = $oObject;
+			if (method_exists($oObject, 'getDebugObjects')) {
+				$aObjects = $oObject->getDebugObjects();
+				if (!is_array($aObjects)) $aObjects = array($aObjects);
+				foreach($aObjects as $oObject) {
+					if (is_a($oObject, 'IDebug')) $this->addObject($oObject);
+				}
+			}
 		}
 		
 		function debug() {
 			echo '<div style="border:solid 1px black; background: #fee; color: #000; margin: 10px; padding:10px;">';
 			echo '<b style="font-size:120%">'.$this->getMessage().'</b>';
-			if ($this->oParser && method_exists($this->oParser, 'getDebugInfo')) echo '<pre>'.$this->oParser->getDebugInfo().'</pre>';
-			echo dump($this->aObject);
+			echo '<hr>';
+			
+			$aObject = array_reverse($this->aObject);
+			foreach($aObject as $oObject) {              
+				echo '<b style="font-size:100%">'.get_class($oObject).'</b>';
+				echo '<pre style="margin: 0 5px 5px 5px;">'.trim($oObject->getDebugInfo()).'</pre>';
+			}
+			
 			echo '</div>';
 		}
 	}

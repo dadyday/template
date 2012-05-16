@@ -13,7 +13,7 @@
 	};
 	
 	interface IDebug {
-		function getDebugInfo();	// returns usefull help for exceptionhandling
+		function getDebugInfo();	// returns usefull help for exception handling
 	}
 		
 ?>

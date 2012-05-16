@@ -1,7 +1,7 @@
 <?php
 
 
-	class TemplateFile implements ITemplateSource {
+	class TemplateFile implements ITemplateSource, IDebug {
 
 		var $oBase;
 		var $name = '';
@@ -67,7 +67,7 @@
 		}
 		
 		function getDebugInfo() {
-			$file = $this->name;
+			$file = $this->sourceFileName;
 			$src = $this->oSource->source;
 			$pos = $this->oSource->matchPos;
 			$len = $this->oSource->matchLen;
