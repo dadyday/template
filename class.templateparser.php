@@ -279,14 +279,14 @@
 			$cont = $this->parse();
 			
 			$oBlock = $this->oBlockStack->push('wrap');
-			$oBlock->wrapContent = $cont;
+			$this->wrapContent = $cont;
 			$oSource = $this->getTemplateSource($tmpl);
 			$cont = $this->parse($oSource);
 			return $cont;
 		}
 		function wrapContent() {
 			$oBlock = $this->oBlockStack->get('wrap');
-			return $oBlock->wrapContent;
+			return $this->wrapContent;
 		}
 		
 /*		// statisch umhüllen

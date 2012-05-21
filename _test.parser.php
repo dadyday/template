@@ -20,6 +20,7 @@
 			$this->newSection();
 			$this->addTokenHandler('/(\w+)="([^"]*)"\s*/', '_tagAttrib');
 			$this->addTokenHandler('/>/', '_tagEnd');
+			$this->addTokenHandler('/\/>/', '_tagClose');
 			$this->saveSection('attribs');
 
 			$this->setSection('tags');
@@ -61,8 +62,6 @@
 			$this->ind++;
 			$attr = $this->parseSection('attribs');
 			$cont = $this->parseSection('tags');
-			$this->ind--;
-			$this->closeNode();
 			return $this->getInd().$name.'('.$attr.') {'.$cont.$this->getInd().'};';
 		}
 		function _tagAttrib($name, $value) {
@@ -73,11 +72,16 @@
 			$this->stop();
 			return false;
 		}
+		
 		function _text($text) {
-			$this->addText($text);
+			$text = trim($text);
+			if ($text) $this->addText($text);
 			return $this->getInd().'"'.$text.'"';
 		}
-		function _tagClose($name) {
+		function _tagClose($name = null) {
+			$this->ind--;
+			$this->closeNode();
+			
 			$this->stop();
 			return false;
 		}
@@ -106,15 +110,16 @@
 	}
 
 
-	$text = 'text <tag>0<test/> content <inner /> </tag> text';
-	$text = '<html><body color="red">text!</body></html>';
+	$text = 'text <tag> <test/> content <inner/> </tag> text';
+   	//$text = '<html><body color="red">text!</body></html>';
 	
 	try {
 		$oParser = new TestParser();
 		$oParser->logging = 1;
 		$parsed = $oParser->parse($text);	
 		
-		echo '<pre>'.$parsed.'</pre>';
+		echo '<pre>'.htmlentities($text).'</pre>';
+		echo '<pre>'.htmlentities($parsed).'</pre>';
 		echo dump($oParser->oRoot,null,3);
 		echo dump($oParser);
 		echo dump(get_included_files());

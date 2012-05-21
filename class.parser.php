@@ -138,7 +138,7 @@
 		
 		function parse($param = null) {
 			$this->_stop = false;
-			$oSrc = $this->oSrc = self::getSourceObj($param);
+			$oSrc = $this->oSrc = is_null($param) ? $this->oSrc : self::getSourceObj($param);
 			$parsed = $this->init();
 			while (1) {
 				$oMatch = $this->getNextMatch($oSrc);
